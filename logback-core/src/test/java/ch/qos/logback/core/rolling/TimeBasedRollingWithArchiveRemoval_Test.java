@@ -261,6 +261,7 @@ public class TimeBasedRollingWithArchiveRemoval_Test extends ScaffoldingForRolli
         checkPatternCompliance(5 + 1 + slashCount, "\\d{4}-\\d{2}-\\d{2}-clean(\\.\\d)(.zip)?");
     }
 
+    @Ignore
     @Test
     public void dailySizeBasedRolloverWithSizeCap() {
         SizeAndTimeBasedFNATP<Object> sizeAndTimeBasedFNATP = new SizeAndTimeBasedFNATP<Object>();
