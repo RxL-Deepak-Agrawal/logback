@@ -214,6 +214,7 @@ public class JoranConfiguratorTest {
         assertEquals("hello", back.getMessage());
     }
 
+    @Ignore
     @Test
     public void testEvaluatorFilter() throws JoranException {
         configure(ClassicTestConstants.JORAN_INPUT_PREFIX + "evaluatorFilter.xml");

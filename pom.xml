@@ -7,7 +7,7 @@
 
   <groupId>ch.qos.logback</groupId>
   <artifactId>logback-parent</artifactId>
-  <version>1.2.13</version>
+  <version>1.2.13-rx1-test1</version>
   <packaging>pom</packaging>
 
   <name>Logback-Parent</name>
@@ -420,15 +420,11 @@
 
   <distributionManagement>
 
-    <site>
-      <id>qos_ch</id>
-      <url>scp://te.qos.ch/var/www/logback.qos.ch/htdocs/</url>
-    </site>
-
     <repository>
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
+		<id>RXLOGIX-thirdparty</id>
+        <name>RXLogix Thirdparty Repository</name>
+        <url>http://10.100.3.6:8080/nexus/content/repositories/thirdparty/</url>
+	</repository>
 
   </distributionManagement>
 

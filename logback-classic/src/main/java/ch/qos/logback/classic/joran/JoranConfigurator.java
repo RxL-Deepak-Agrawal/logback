@@ -46,7 +46,6 @@ public class JoranConfigurator extends JoranConfiguratorBase<ILoggingEvent> {
         rs.addRule(new ElementSelector("configuration/contextName"), new ContextNameAction());
         rs.addRule(new ElementSelector("configuration/contextListener"), new LoggerContextListenerAction());
         rs.addRule(new ElementSelector("configuration/insertFromJNDI"), new InsertFromJNDIAction());
-        rs.addRule(new ElementSelector("configuration/evaluator"), new EvaluatorAction());
 
         rs.addRule(new ElementSelector("configuration/appender/sift"), new SiftAction());
         rs.addRule(new ElementSelector("configuration/appender/sift/*"), new NOPAction());
