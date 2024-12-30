@@ -66,6 +66,7 @@ public class SizeBasedRollingTest extends ScaffoldingForRollingTests {
         initRFA(randomOutputDir + fileName);
 
         sizeBasedTriggeringPolicy.setMaxFileSize(new FileSize(100));
+        sizeBasedTriggeringPolicy.setCheckIncrement(50);
         fwrp.setMinIndex(0);
         fwrp.setFileNamePattern(randomOutputDir + filenamePattern);
 
