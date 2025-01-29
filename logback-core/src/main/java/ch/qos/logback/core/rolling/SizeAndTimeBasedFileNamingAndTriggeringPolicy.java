@@ -30,7 +30,7 @@ import ch.qos.logback.core.util.InvocationGate;
 import ch.qos.logback.core.util.SimpleInvocationGate;
 
 @NoAutoStart
-public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPolicyBase<E> {
+public class SizeAndTimeBasedFileNamingAndTriggeringPolicy<E> extends TimeBasedFileNamingAndTriggeringPolicyBase<E> {
 
     enum Usage {EMBEDDED, DIRECT};
 
@@ -48,15 +48,17 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
 
     private final Usage usage;
 
-    InvocationGate invocationGate = new SimpleInvocationGate();
+    //InvocationGate invocationGate = new SimpleInvocationGate();
 
-    public SizeAndTimeBasedFNATP() {
+    public SizeAndTimeBasedFileNamingAndTriggeringPolicy() {
         this(Usage.DIRECT);
     }
     
-    public SizeAndTimeBasedFNATP(Usage usage) {
+    public SizeAndTimeBasedFileNamingAndTriggeringPolicy(Usage usage) {
         this.usage = usage;
     }
+    
+    public LengthCounter lengthCounter = new LengthCounterBase();
     
     @Override
     public void start() {
@@ -77,8 +79,8 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             withErrors();
         }
 
-        if(checkIncrement != null)
-            invocationGate = new SimpleInvocationGate(checkIncrement);
+        //if(checkIncrement != null)
+        //    invocationGate = new SimpleInvocationGate(checkIncrement);
 
         if (!validateDateAndIntegerTokens()) {
             withErrors();
@@ -153,13 +155,21 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             currentPeriodsCounter = 0;
             setDateInCurrentPeriod(time);
             computeNextCheck();
+            lengthCounter.reset();
             return true;
         }
-
+        
+        boolean result = checkSizeBasedTrigger(activeFile);
+        if(result)
+            lengthCounter.reset();
+        return result;
+    }
+    
+    private boolean checkSizeBasedTrigger(File activeFile) {
         // next check for roll-over based on size
-        if (invocationGate.isTooSoon(time)) {
-            return false;
-        }
+//        if (invocationGate.isTooSoon(time)) {
+//            return false;
+//        }
 
         if (activeFile == null) {
             addWarn("activeFile == null");
@@ -169,7 +179,7 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             addWarn("maxFileSize = null");
             return false;
         }
-        if (activeFile.length() >= maxFileSize.getSize()) {
+        if (lengthCounter.getLength() >= maxFileSize.getSize()) {
 
             elapsedPeriodsFileName = tbrp.fileNamePatternWithoutCompSuffix.convertMultipleArguments(dateInCurrentPeriod, currentPeriodsCounter);
             currentPeriodsCounter++;
@@ -194,6 +204,11 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
 
     public void setMaxFileSize(FileSize aMaxFileSize) {
         this.maxFileSize = aMaxFileSize;
+    }
+    
+    @Override
+    public LengthCounter getLengthCounter() {
+        return lengthCounter;
     }
 
 }

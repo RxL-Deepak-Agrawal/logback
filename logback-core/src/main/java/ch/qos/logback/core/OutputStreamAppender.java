@@ -196,12 +196,25 @@ public class OutputStreamAppender<E> extends UnsynchronizedAppenderBase<E> {
         
         lock.lock();
         try {
-            this.outputStream.write(byteArray);
-            if (immediateFlush) {
-                this.outputStream.flush();
-            }
+        	writeByteArrayToOutputStreamWithPossibleFlush(byteArray);
+            updateByteCount(byteArray);
         } finally {
             lock.unlock();
+        }
+    }
+    
+    protected void updateByteCount(byte[] byteArray) {
+    }
+    
+    /**
+     * A simple method to write to an outputStream and flush the stream if immediateFlush is set to true.
+     *
+     * @since 1.3.9/1.4.9
+     */
+    protected final void writeByteArrayToOutputStreamWithPossibleFlush(byte[] byteArray) throws IOException {
+        this.outputStream.write(byteArray);
+        if (immediateFlush) {
+            this.outputStream.flush();
         }
     }
 

@@ -95,8 +95,9 @@ public class RollingFileAppender<E> extends FileAppender<E> {
             }
         }
 
-        currentlyActiveFile = new File(getFile());
         addInfo("Active log file name: " + getFile());
+        currentlyActiveFile = new File(getFile());
+        initializeLengthCounter();
         super.start();
     }
 
@@ -142,6 +143,14 @@ public class RollingFileAppender<E> extends FileAppender<E> {
             map.put(getName(), fileNamePattern);
         }
         return collisionsDetected;
+    }
+    
+    private void initializeLengthCounter() {
+        if(getLengthCounter() != null && currentlyActiveFile.exists()) {
+            long currentFileLength = currentlyActiveFile.length();
+            addInfo("Setting currentFileLength to "+currentFileLength+ " for "+currentlyActiveFile);
+            incrementByteCount(currentFileLength);
+        }
     }
 
     @Override
@@ -252,9 +261,9 @@ public class RollingFileAppender<E> extends FileAppender<E> {
      */
     @SuppressWarnings("unchecked")
     public void setRollingPolicy(RollingPolicy policy) {
-        rollingPolicy = policy;
-        if (rollingPolicy instanceof TriggeringPolicy) {
-            triggeringPolicy = (TriggeringPolicy<E>) policy;
+        this.rollingPolicy = policy;
+        if (this.rollingPolicy instanceof TriggeringPolicy) {
+            this.triggeringPolicy = (TriggeringPolicy<E>) policy;
         }
 
     }
@@ -264,5 +273,25 @@ public class RollingFileAppender<E> extends FileAppender<E> {
         if (policy instanceof RollingPolicy) {
             rollingPolicy = (RollingPolicy) policy;
         }
+    }
+    
+    @Override
+    protected void updateByteCount(byte[] byteArray) {
+    	if(byteArray == null)
+            return;
+        incrementByteCount(byteArray.length);
+    }
+    
+    void incrementByteCount(long increment) {
+    	LengthCounter lengthCounter = getLengthCounter();
+        if (lengthCounter == null)
+            return;
+        if (increment > 0) {
+            lengthCounter.add(increment);
+        }
+    }
+    
+    private LengthCounter getLengthCounter() {
+        return triggeringPolicy.getLengthCounter();
     }
 }
