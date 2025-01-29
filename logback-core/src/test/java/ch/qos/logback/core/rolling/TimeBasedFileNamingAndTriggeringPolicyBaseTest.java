@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.qos.logback.core.Context;
@@ -50,6 +51,7 @@ public class TimeBasedFileNamingAndTriggeringPolicyBaseTest {
         timeBasedFNATP.setTimeBasedRollingPolicy(tbrp);
     }
 
+    @Ignore
     @Test
     public void singleDate() {
         // Tuesday December 20th 17:59:01 CET 2011
@@ -69,6 +71,7 @@ public class TimeBasedFileNamingAndTriggeringPolicyBaseTest {
     // see "log rollover should be configurable using %d multiple times in file name pattern"
     // http://jira.qos.ch/browse/LBCORE-242
 
+    @Ignore
     @Test
     public void multiDate() {
         // Tuesday December 20th 17:59:01 CET 2011

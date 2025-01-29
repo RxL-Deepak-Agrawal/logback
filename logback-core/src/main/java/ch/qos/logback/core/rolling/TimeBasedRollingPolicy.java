@@ -223,6 +223,11 @@ public class TimeBasedRollingPolicy<E> extends RollingPolicyBase implements Trig
         return timeBasedFileNamingAndTriggeringPolicy.isTriggeringEvent(activeFile, event);
     }
 
+    @Override
+    public LengthCounter getLengthCounter() {
+        return timeBasedFileNamingAndTriggeringPolicy.getLengthCounter();
+    }
+    
     /**
      * Get the number of archive files to keep.
      * 

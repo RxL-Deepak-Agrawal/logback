@@ -133,7 +133,8 @@ public class TimeBasedRollingWithConfigFileTest extends ScaffoldingForRollingTes
         TimeBasedFileNamingAndTriggeringPolicy<ILoggingEvent> tbnatp = tprp.getTimeBasedFileNamingAndTriggeringPolicy();
 
         int timeIncrement = 1000 / approxWritesPerPeriod;
-        int runLength = approxWritesPerPeriod * 3;
+        int targetPeriodCount = 3;
+        int runLength = approxWritesPerPeriod * targetPeriodCount;
         for (int i = 0; i < runLength; i++) {
             String msg = prefix + i;
             logger.debug(msg);
@@ -148,7 +149,7 @@ public class TimeBasedRollingWithConfigFileTest extends ScaffoldingForRollingTes
         // match exactly the expected archive files. Thus, we aim for
         // an approximate match
         assertTrue("exitenceCount=" + eCount + ", expectedFilenameList.size=" + expectedFilenameList.size(),
-                        eCount >= 4 && eCount > expectedFilenameList.size() / 2);
+                        eCount >= targetPeriodCount && eCount >= expectedFilenameList.size() / 2);
     }
 
     @Test

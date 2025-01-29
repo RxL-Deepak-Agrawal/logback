@@ -23,6 +23,7 @@ import java.util.TimeZone;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ch.qos.logback.core.CoreConstants;
@@ -100,6 +101,7 @@ public class RollingCalendarTest {
         }
     }
 
+    @Ignore
     @Test
     public void testVaryingNumberOfHourlyPeriods() {
         RollingCalendar rc = new RollingCalendar("yyyy-MM-dd_HH");

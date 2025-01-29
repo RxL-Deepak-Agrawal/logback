@@ -27,30 +27,38 @@ import ch.qos.logback.core.rolling.helper.SizeAndTimeBasedArchiveRemover;
 import ch.qos.logback.core.util.FileSize;
 import ch.qos.logback.core.util.DefaultInvocationGate;
 import ch.qos.logback.core.util.InvocationGate;
+import ch.qos.logback.core.util.SimpleInvocationGate;
 
 @NoAutoStart
-public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPolicyBase<E> {
+public class SizeAndTimeBasedFileNamingAndTriggeringPolicy<E> extends TimeBasedFileNamingAndTriggeringPolicyBase<E> {
 
     enum Usage {EMBEDDED, DIRECT};
 
     
     int currentPeriodsCounter = 0;
     FileSize maxFileSize;
-    // String maxFileSizeAsString;
+
+
+
+    Integer checkIncrement = null;
 
     long nextSizeCheck = 0;
     static String MISSING_INT_TOKEN = "Missing integer token, that is %i, in FileNamePattern [";
     static String MISSING_DATE_TOKEN = "Missing date token, that is %d, in FileNamePattern [";
 
     private final Usage usage;
-    
-    public SizeAndTimeBasedFNATP() {
+
+    //InvocationGate invocationGate = new SimpleInvocationGate();
+
+    public SizeAndTimeBasedFileNamingAndTriggeringPolicy() {
         this(Usage.DIRECT);
     }
     
-    public SizeAndTimeBasedFNATP(Usage usage) {
+    public SizeAndTimeBasedFileNamingAndTriggeringPolicy(Usage usage) {
         this.usage = usage;
     }
+    
+    public LengthCounter lengthCounter = new LengthCounterBase();
     
     @Override
     public void start() {
@@ -70,6 +78,9 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             addError("maxFileSize property is mandatory.");
             withErrors();
         }
+
+        //if(checkIncrement != null)
+        //    invocationGate = new SimpleInvocationGate(checkIncrement);
 
         if (!validateDateAndIntegerTokens()) {
             withErrors();
@@ -131,7 +142,6 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
         }
     }
 
-    InvocationGate invocationGate = new DefaultInvocationGate();
 
     @Override
     public boolean isTriggeringEvent(File activeFile, final E event) {
@@ -145,13 +155,21 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             currentPeriodsCounter = 0;
             setDateInCurrentPeriod(time);
             computeNextCheck();
+            lengthCounter.reset();
             return true;
         }
-
+        
+        boolean result = checkSizeBasedTrigger(activeFile);
+        if(result)
+            lengthCounter.reset();
+        return result;
+    }
+    
+    private boolean checkSizeBasedTrigger(File activeFile) {
         // next check for roll-over based on size
-        if (invocationGate.isTooSoon(time)) {
-            return false;
-        }
+//        if (invocationGate.isTooSoon(time)) {
+//            return false;
+//        }
 
         if (activeFile == null) {
             addWarn("activeFile == null");
@@ -161,7 +179,7 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
             addWarn("maxFileSize = null");
             return false;
         }
-        if (activeFile.length() >= maxFileSize.getSize()) {
+        if (lengthCounter.getLength() >= maxFileSize.getSize()) {
 
             elapsedPeriodsFileName = tbrp.fileNamePatternWithoutCompSuffix.convertMultipleArguments(dateInCurrentPeriod, currentPeriodsCounter);
             currentPeriodsCounter++;
@@ -171,6 +189,14 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
         return false;
     }
 
+    public Integer getCheckIncrement() {
+        return checkIncrement;
+    }
+
+    public void setCheckIncrement(Integer checkIncrement) {
+        this.checkIncrement = checkIncrement;
+    }
+
     @Override
     public String getCurrentPeriodsFileNameWithoutCompressionSuffix() {
         return tbrp.fileNamePatternWithoutCompSuffix.convertMultipleArguments(dateInCurrentPeriod, currentPeriodsCounter);
@@ -178,6 +204,11 @@ public class SizeAndTimeBasedFNATP<E> extends TimeBasedFileNamingAndTriggeringPo
 
     public void setMaxFileSize(FileSize aMaxFileSize) {
         this.maxFileSize = aMaxFileSize;
+    }
+    
+    @Override
+    public LengthCounter getLengthCounter() {
+        return lengthCounter;
     }
 
 }

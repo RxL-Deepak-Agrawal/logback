@@ -13,10 +13,13 @@
  */
 package ch.qos.logback.core.rolling;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -24,14 +27,17 @@ import java.util.concurrent.ExecutionException;
 import org.junit.Before;
 import org.junit.Test;
 
+import ch.qos.logback.core.CoreConstants;
 import ch.qos.logback.core.encoder.EchoEncoder;
 import ch.qos.logback.core.status.InfoStatus;
 import ch.qos.logback.core.status.StatusChecker;
 import ch.qos.logback.core.status.StatusManager;
+import ch.qos.logback.core.util.CachingDateFormatter;
 import ch.qos.logback.core.util.FileSize;
+import ch.qos.logback.core.util.StatusPrinter;
 
 public class SizeAndTimeBasedFNATP_Test extends ScaffoldingForRollingTests {
-    private SizeAndTimeBasedFNATP<Object> sizeAndTimeBasedFNATP = null;
+    private SizeAndTimeBasedFileNamingAndTriggeringPolicy<Object> sizeAndTimeBasedFNATP = null;
     private RollingFileAppender<Object> rfa1 = new RollingFileAppender<Object>();
     private TimeBasedRollingPolicy<Object> tbrp1 = new TimeBasedRollingPolicy<Object>();
     private RollingFileAppender<Object> rfa2 = new RollingFileAppender<Object>();
@@ -57,7 +63,9 @@ public class SizeAndTimeBasedFNATP_Test extends ScaffoldingForRollingTests {
 
     private void initPolicies(RollingFileAppender<Object> rfa, TimeBasedRollingPolicy<Object> tbrp, String filenamePattern, int sizeThreshold, long givenTime,
                     long lastCheck) {
-        sizeAndTimeBasedFNATP = new SizeAndTimeBasedFNATP<Object>();
+        sizeAndTimeBasedFNATP = new SizeAndTimeBasedFileNamingAndTriggeringPolicy<Object>();
+        sizeAndTimeBasedFNATP.setContext(context);
+        sizeAndTimeBasedFNATP.setCheckIncrement(10);
         tbrp.setContext(context);
         sizeAndTimeBasedFNATP.setMaxFileSize(new FileSize(sizeThreshold));
         tbrp.setTimeBasedFileNamingAndTriggeringPolicy(sizeAndTimeBasedFNATP);
@@ -254,4 +262,40 @@ public class SizeAndTimeBasedFNATP_Test extends ScaffoldingForRollingTests {
     // assertEquals(maxHistory + 1, getFilesInDirectory(randomOutputDir).length);
     // sortedContentCheck(randomOutputDir, 1000, "", 863);
     // }
+    
+    @Test
+    public void checkInitialFileSize_withFile() throws IOException {
+        String stem = "foo.log";
+        String testId = "checkDateCollision";
+        String fixedContent = "Hello world";
+        byte[] fixedContentBytes = fixedContent.getBytes();
+        String fileProperty = randomOutputDir + stem;
+        Files.createDirectories(Paths.get(randomOutputDir));
+        Files.write(Paths.get(fileProperty), fixedContentBytes);
+        initRollingFileAppender(rfa1, fileProperty);
+        sizeThreshold = 300;
+        initPolicies(rfa1, tbrp1, randomOutputDir + testId + "-%d-%i.txt", sizeThreshold,
+                        currentTime, 0);
+        //StatusPrinter.print(context);
+        assertEquals(fixedContentBytes.length, tbrp1.getLengthCounter().getLength());
+    }
+    
+    @Test
+    public void checkInitialFileSize_withoutFile() throws IOException {
+        String testId = "checkInitialFileSize_withoutFile";
+        String fixedContent = "Hello world";
+        byte[] fixedContentBytes = fixedContent.getBytes();
+        CachingDateFormatter cdf = new CachingDateFormatter(CoreConstants.DAILY_DATE_PATTERN);
+        String nowString = cdf.format(currentTime);
+        String pathToFirstFile = randomOutputDir + testId + "-"+nowString+"-0.txt";
+        Files.createDirectories(Paths.get(randomOutputDir));
+        Files.write(Paths.get(pathToFirstFile), fixedContentBytes);
+        initRollingFileAppender(rfa1, null);
+        sizeThreshold = 300;
+        initPolicies(rfa1, tbrp1, randomOutputDir + testId + "-%d-%i.txt", sizeThreshold,
+                        currentTime, 0);
+        StatusPrinter.print(context);
+        assertEquals(fixedContentBytes.length, tbrp1.getLengthCounter().getLength());
+    }
+    
 }

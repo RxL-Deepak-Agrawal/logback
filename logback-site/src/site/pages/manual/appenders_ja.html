@@ -839,7 +839,7 @@ public interface RollingPolicy extends LifeCycle {
       &lt;!-- rollover daily --&gt;
       &lt;fileNamePattern&gt;<b>mylog-%d{yyyy-MM-dd}.<span class="big">%i</span>.txt</b>&lt;/fileNamePattern&gt;
       <b>&lt;timeBasedFileNamingAndTriggeringPolicy</b>
-            <b>class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP"&gt;</b>
+            <b>class="ch.qos.logback.core.rolling.SizeAndTimeBasedFileNamingAndTriggeringPolicy"&gt;</b>
         &lt;!-- or whenever the file size reaches 100MB --&gt;
         <b>&lt;maxFileSize&gt;100MB&lt;/maxFileSize&gt;</b>
       <b>&lt;/timeBasedFileNamingAndTriggeringPolicy&gt;</b>
